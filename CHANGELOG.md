@@ -2,9 +2,10 @@
 
 Only user-visible changes are listed here.
 
-## 0.1.18
+## 0.2.0
 
-First release published here. Earlier builds were handed out directly.
+First release published here. Earlier builds were handed out directly, so this
+lists everything new since 0.1.17.
 
 **Statement rows**
 

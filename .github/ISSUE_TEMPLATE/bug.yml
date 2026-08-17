@@ -12,8 +12,8 @@ body:
     id: version
     attributes:
       label: Version
-      description: From the Extensions pane, e.g. 0.1.18
-      placeholder: "0.1.18"
+      description: From the Extensions pane, e.g. 0.2.0
+      placeholder: "0.2.0"
     validations:
       required: true
 
