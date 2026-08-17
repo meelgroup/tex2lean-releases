@@ -1,0 +1,70 @@
+Tex2Lean — Proprietary License
+Copyright (c) 2026 Kuldeep S. Meel and the meelgroup contributors.
+All rights reserved.
+
+1. GRANT
+
+   Permission is granted, free of charge, to any person or organization to
+   install and use the "Tex2Lean" extension as distributed through
+   the Visual Studio Marketplace or as an official .vsix release, for any
+   purpose, including commercial and academic research.
+
+   Output produced by the extension — blueprints, agent briefs, handoff
+   reports, and scaffolded Lean projects — belongs to you. Nothing in this
+   license asserts any claim over your papers, your Lean developments, or the
+   files the extension writes into your workspace.
+
+2. RESTRICTIONS
+
+   Except as permitted by applicable law notwithstanding this clause, you may
+   not:
+
+   (a) copy, publish, sublicense, sell, or otherwise redistribute the extension
+       or any part of it;
+
+   (b) modify the extension, or create derivative works based on it;
+
+   (c) reverse engineer, decompile, disassemble, deobfuscate, or otherwise
+       attempt to derive the source of the extension; or
+
+   (d) extract, decrypt, reproduce, or republish the bundled methodology
+       playbook (assets/playbook/*.enc), in whole or in part, whether as
+       plaintext, as a paraphrase, or as training data.
+
+   The obfuscation protecting the bundled playbook is deliberately documented
+   as tamper-resistance rather than secrecy. That documentation is a statement
+   of fact about the mechanism, not a grant of permission under 2(c) or 2(d).
+
+3. THIRD-PARTY COMPONENTS
+
+   The extension bundles third-party npm packages, each under its own license.
+   Those licenses govern those components and are unaffected by this one.
+   Mathlib, arlib, and Lean are not distributed with this extension; the
+   scaffold merely references them, and their own licenses apply.
+
+4. NO WARRANTY
+
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+   FITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT.
+
+   This is worth stating concretely, because of what the extension does: it
+   plans formalizations and grades them, and both are model-generated
+   judgements. Every Lean statement it emits is a proposal, every declaration
+   name it cites may be wrong, and a passing handoff check means only that a
+   careful reader found nothing — never that a proof was verified. Verifying
+   the mathematics is the user's responsibility.
+
+5. LIMITATION OF LIABILITY
+
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+   DAMAGES, OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT, OR
+   OTHERWISE, ARISING FROM, OUT OF, OR IN CONNECTION WITH THE SOFTWARE OR THE
+   USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+6. TERMINATION
+
+   This license terminates automatically if you breach section 2. On
+   termination you must stop using and uninstall the extension.
+
+For permissions beyond this license, contact meel@gatech.edu.

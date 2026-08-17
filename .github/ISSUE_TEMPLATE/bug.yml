@@ -1,0 +1,72 @@
+name: Bug report
+description: Something Tex2Lean did wrong
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Two fields below do most of the work: the version and the log. A report
+        without them usually ends in us asking for them.
+
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: From the Extensions pane, e.g. 0.1.18
+      placeholder: "0.1.18"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: provider
+    attributes:
+      label: What is it connected to?
+      options:
+        - Claude subscription (Claude Code)
+        - ChatGPT subscription (Codex)
+        - Anthropic API key
+        - OpenAI API key
+        - Not connected yet
+    validations:
+      required: true
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating system
+      options:
+        - macOS
+        - Linux
+        - Windows (WSL)
+        - Windows (native)
+    validations:
+      required: true
+
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you did, what you expected, and what you got instead.
+    validations:
+      required: true
+
+  - type: textarea
+    id: log
+    attributes:
+      label: Log
+      description: >
+        Run "Tex2Lean: Show extension log", or click Log at the bottom of the
+        side bar. Paste the part around the problem. A few hundred lines is
+        plenty. Check it for anything you would rather not publish before you
+        paste it.
+      render: text
+    validations:
+      required: true
+
+  - type: input
+    id: paper
+    attributes:
+      label: The paper, if you can share it
+      description: >
+        A link, an arXiv number, or "can send privately". Most odd behaviour
+        comes from a statement the scan read differently than you did.

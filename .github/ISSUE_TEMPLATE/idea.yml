@@ -1,0 +1,26 @@
+name: Idea or request
+description: Something Tex2Lean should do and does not
+labels: ["idea"]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What you want it to do
+    validations:
+      required: true
+
+  - type: textarea
+    id: why
+    attributes:
+      label: What you are doing now instead
+      description: >
+        The workaround, or the point at which you gave up. This is the part that
+        tells us how much the idea is worth.
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: From the Extensions pane. Skip it if you have not installed it yet.

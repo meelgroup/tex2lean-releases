@@ -1,0 +1,10 @@
+# No blank issues. The two templates ask for the version and the log, which is
+# the whole reason they exist; a blank issue arrives with neither.
+blank_issues_enabled: false
+contact_links:
+  - name: Download the extension
+    url: https://github.com/meelgroup/tex2lean-releases/releases/latest
+    about: The latest .vsix. Check your version against it before reporting a bug.
+  - name: Ask by email
+    url: mailto:meel@gatech.edu
+    about: For anything you would rather not write in public.
