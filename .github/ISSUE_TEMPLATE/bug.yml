@@ -12,7 +12,7 @@ body:
     id: version
     attributes:
       label: Version
-      description: From the Extensions pane, e.g. 0.2.0
+      description: From the Extensions pane, or `tex2lean --version`. e.g. 0.2.0
       placeholder: "0.2.0"
     validations:
       required: true

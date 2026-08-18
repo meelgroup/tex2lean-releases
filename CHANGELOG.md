@@ -2,6 +2,21 @@
 
 Only user-visible changes are listed here.
 
+## Unreleased
+
+**The command line**
+
+- New: `tex2lean`, the same program in a terminal. Install it with one line;
+  see the README.
+- One self-contained file per platform. It needs no Node and no editor.
+- macOS, Linux and Windows, on Intel and ARM.
+- The installer checks the download against a published SHA-256 and installs
+  nothing if it does not match.
+- It does not edit your shell profile. If the directory is not on your PATH it
+  prints the line to add.
+- `tex2lean --version` now reports the real version. Every build before this
+  said `0.0.0-dev`.
+
 ## 0.2.0
 
 First release published here. Earlier builds were handed out directly, so this

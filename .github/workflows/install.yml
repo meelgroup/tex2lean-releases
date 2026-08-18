@@ -1,0 +1,197 @@
+# Does the install line work, on a machine nobody has prepared?
+#
+# This repository carries no source, so there is nothing here to unit-test. What
+# it can do is the one thing the source repository cannot: run the published
+# artifacts on Linux and on Windows. Every executable in a release is built on
+# one macOS laptop, and until this workflow existed four of the five had never
+# been started anywhere.
+#
+# It tests two different things, and the difference matters:
+#
+#   the-script   runs install.sh out of this checkout. Catches an edit that
+#                broke it, before anybody has run the line.
+#   the-line     runs exactly what the README tells people to type, fetching
+#                the script over the network. Catches a broken release, a
+#                missing asset, a checksum that does not match, and raw
+#                githubusercontent being unreachable.
+#
+# Weekly as well as on a push, because most of what can break here breaks
+# without anybody touching this repository.
+
+name: install
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - install.sh
+      - install.ps1
+      - .github/workflows/install.yml
+  release:
+    types: [published]
+  schedule:
+    # Monday morning, so a release that quietly stopped installing is found
+    # before somebody writes in about it.
+    - cron: "17 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  # Before asking whether the install works, ask whether the release is whole.
+  # A release missing one platform installs perfectly on the other four, and the
+  # person it fails for is the only one who ever finds out.
+  release-is-complete:
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.latest.outputs.tag }}
+    steps:
+      - id: latest
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -eu
+          tag="$(gh release view --repo "$GITHUB_REPOSITORY" --json tagName -q .tagName)"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "latest release: $tag"
+
+          gh release view "$tag" --repo "$GITHUB_REPOSITORY" --json assets \
+            -q '.assets[].name' | sort > present.txt
+          cat present.txt
+
+          cat > wanted.txt <<'EOF'
+          checksums.txt
+          tex2lean-darwin-arm64.gz
+          tex2lean-darwin-x64.gz
+          tex2lean-linux-arm64.gz
+          tex2lean-linux-x64.gz
+          tex2lean-win32-x64.exe.gz
+          EOF
+          missing="$(comm -13 present.txt <(sort wanted.txt) || true)"
+          if [ -n "$missing" ]; then
+            echo "::error::$tag is missing: $missing"
+            echo "Every platform is published together or the ones left out fail silently."
+            exit 1
+          fi
+
+          # And checksums.txt names every one of them. install.sh refuses an
+          # asset the file does not list, so a stale copy is a release nobody
+          # can install — on the platforms it forgot, only.
+          gh release download "$tag" --repo "$GITHUB_REPOSITORY" --pattern checksums.txt --dir .
+          for a in tex2lean-darwin-arm64 tex2lean-darwin-x64 tex2lean-linux-arm64 tex2lean-linux-x64 tex2lean-win32-x64.exe; do
+            grep -q " $a.gz\$" checksums.txt || { echo "::error::checksums.txt does not name $a.gz"; exit 1; }
+          done
+          echo "checksums.txt names all five."
+
+  # The script as it stands in this repository, on every unix a runner exists
+  # for. `shellcheck` first: it is on the ubuntu image already, and it reads a
+  # POSIX shell script more carefully than a person does.
+  the-script:
+    needs: release-is-complete
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, ubuntu-24.04-arm, macos-latest, macos-13]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: shellcheck
+        if: startsWith(matrix.os, 'ubuntu')
+        run: shellcheck --shell=sh install.sh
+
+      - name: install
+        run: sh install.sh | tee install.log
+
+      - name: it is there, it runs, and it is the release that was published
+        env:
+          TAG: ${{ needs.release-is-complete.outputs.tag }}
+        run: |
+          set -eu
+          bin="$HOME/.local/bin/tex2lean"
+          test -x "$bin" || { echo "::error::nothing at $bin"; exit 1; }
+          got="$("$bin" --version)"
+          want="${TAG#v}"
+          [ "$got" = "$want" ] || { echo "::error::installed $got, release is $want"; exit 1; }
+          "$bin" --help | head -1 | grep -q '^tex2lean' || { echo "::error::--help does not name the tool"; exit 1; }
+          echo "installed $got on $(uname -sm)"
+
+      - name: it says the truth about PATH
+        run: |
+          set -eu
+          # A runner's PATH does not carry ~/.local/bin, so the notice must be
+          # there. If this ever stops being true the assertion is wrong, not the
+          # installer — check before changing it.
+          case ":$PATH:" in
+            *":$HOME/.local/bin:"*) grep -q "tex2lean scan" install.log ;;
+            *) grep -q "is not on your PATH" install.log && grep -q "$HOME/.local/bin" install.log ;;
+          esac
+
+      - name: and installing again over the top is fine
+        run: |
+          set -eu
+          sh install.sh
+          "$HOME/.local/bin/tex2lean" --version
+          # The move is one rename, so a half-written binary is not a state this
+          # can be left in. Nothing beside it either.
+          ls "$HOME/.local/bin" | grep -q '\.incoming$' && { echo "::error::left an .incoming behind"; exit 1; }
+          exit 0
+
+  # What the README actually tells people to type, fetched over the network.
+  the-line:
+    needs: release-is-complete
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: the line from the README
+        run: curl -fsSL "https://raw.githubusercontent.com/${GITHUB_REPOSITORY}/main/install.sh" | sh
+
+      - name: and it left a working tool
+        env:
+          TAG: ${{ needs.release-is-complete.outputs.tag }}
+        run: |
+          set -eu
+          got="$("$HOME/.local/bin/tex2lean" --version)"
+          [ "$got" = "${TAG#v}" ] || { echo "::error::installed $got, release is ${TAG#v}"; exit 1; }
+
+  # Windows, which is the half of this that has never been run by hand at all.
+  windows:
+    needs: release-is-complete
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: install, from the checkout
+        shell: pwsh
+        run: ./install.ps1
+
+      - name: it is there, it runs, and it is the published release
+        shell: pwsh
+        env:
+          TAG: ${{ needs.release-is-complete.outputs.tag }}
+        run: |
+          # The installer adds the directory to the *user* PATH, which this
+          # session does not pick up — that is the documented behaviour, so the
+          # check uses the full path rather than pretending otherwise.
+          $exe = Join-Path $env:LOCALAPPDATA "Programs\tex2lean\tex2lean.exe"
+          if (-not (Test-Path $exe)) { throw "nothing at $exe" }
+          $got = & $exe --version
+          $want = $env:TAG -replace '^v',''
+          if ($got -ne $want) { throw "installed $got, release is $want" }
+          if (-not ((& $exe --help)[0] -match '^tex2lean')) { throw "--help does not name the tool" }
+          Write-Host "installed $got on windows"
+
+      - name: the directory it added is on the user PATH
+        shell: pwsh
+        run: |
+          $dir = Join-Path $env:LOCALAPPDATA "Programs\tex2lean"
+          $userPath = [Environment]::GetEnvironmentVariable('Path','User')
+          if (($userPath -split ';') -notcontains $dir) { throw "$dir was not added to the user PATH" }
+
+      - name: and installing again over the top is fine
+        shell: pwsh
+        run: ./install.ps1
