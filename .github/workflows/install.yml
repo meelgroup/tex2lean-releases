@@ -92,7 +92,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, ubuntu-24.04-arm, macos-latest, macos-13]
+        # macos-15-intel rather than macos-13: the older label sat queued for
+        # half an hour and never picked a runner, which is what a retired image
+        # looks like from outside. Intel macs are the one platform here with no
+        # runner of their own architecture to spare, so if this one goes the
+        # same way the honest thing is to drop it and say darwin-x64 is built
+        # and not run, rather than leave a job queued forever and call the run
+        # incomplete.
+        os: [ubuntu-latest, ubuntu-24.04-arm, macos-latest, macos-15-intel]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
