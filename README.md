@@ -1,6 +1,6 @@
 # Tex2Lean
 
-**From a theorem in your paper to a working Lean 4 project.**
+**From a theorem in your paper to a formalized Lean 4 Project.**
 
 You have an algorithm and a theorem about it. Tex2Lean formalizes both. The
 pseudocode is transcribed line by line from your paper. The theorem is stated
