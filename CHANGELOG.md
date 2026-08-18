@@ -2,7 +2,10 @@
 
 Only user-visible changes are listed here.
 
-## Unreleased
+## 0.2.0
+
+First release published here. Earlier builds were handed out directly, so this
+lists everything new since 0.1.17.
 
 **The command line**
 
@@ -16,11 +19,6 @@ Only user-visible changes are listed here.
   prints the line to add.
 - `tex2lean --version` now reports the real version. Every build before this
   said `0.0.0-dev`.
-
-## 0.2.0
-
-First release published here. Earlier builds were handed out directly, so this
-lists everything new since 0.1.17.
 
 **Statement rows**
 
