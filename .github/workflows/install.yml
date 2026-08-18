@@ -97,11 +97,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Once, not once per ubuntu architecture: it reads the same file.
       - name: shellcheck
-        if: startsWith(matrix.os, 'ubuntu')
+        if: matrix.os == 'ubuntu-latest'
         run: shellcheck --shell=sh install.sh
 
+      # `shell: bash` for the pipefail it brings with it. The default here is
+      # `bash -e`, without it, so `sh install.sh | tee` would report tee's exit
+      # code and a failed install would read as a pass — which is the one shape
+      # of failure this whole repository is arranged against.
       - name: install
+        shell: bash
         run: sh install.sh | tee install.log
 
       - name: it is there, it runs, and it is the release that was published

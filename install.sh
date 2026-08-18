@@ -136,8 +136,16 @@ mkdir -p "$DIR" || die "cannot create $DIR"
 # Into place with one move, so an interrupted install leaves the old binary
 # rather than half of the new one. A `tex2lean` that is running right now keeps
 # running: the move replaces the directory entry, not the file it had open.
-mv "$tmp/$BIN" "$DIR/$BIN.incoming" && mv "$DIR/$BIN.incoming" "$DIR/$BIN" ||
+#
+# Two statements rather than `A && B || C`, which shellcheck is right to flag:
+# it reads as if-then-else and is not one. The half that mattered here is the
+# middle case — the first move lands and the second does not — which used to
+# die correctly and leave a 116 MB .incoming file in the directory forever.
+mv "$tmp/$BIN" "$DIR/$BIN.incoming" || die "cannot write into $DIR"
+mv "$DIR/$BIN.incoming" "$DIR/$BIN" || {
+	rm -f "$DIR/$BIN.incoming"
 	die "cannot write $DIR/$BIN"
+}
 
 say ""
 say "  installed $DIR/$BIN  ($version)"
@@ -152,6 +160,10 @@ case ":$PATH:" in
 	say "  Run: $BIN scan   (in the folder that holds your paper's .tex files)"
 	;;
 *)
+	# The tilde is text here, not a path: these two strings are printed for
+	# somebody to read and retype, and never opened. `$HOME/.zshrc` would be
+	# correct and would read worse in a sentence that says "add this to".
+	# shellcheck disable=SC2088
 	case "${SHELL:-}" in
 	*/fish) profile="~/.config/fish/config.fish"; line="fish_add_path $DIR" ;;
 	*/zsh) profile="~/.zshrc"; line="export PATH=\"$DIR:\$PATH\"" ;;
