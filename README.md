@@ -1,13 +1,16 @@
 # Tex2Lean
 
-**From a theorem in your paper to a formalized Lean 4 Project.**
+**From a theorem in your paper to a working Lean 4 project.**
+
 
 You have an algorithm and a theorem about it. Tex2Lean formalizes both. The
 pseudocode is transcribed line by line from your paper. The theorem is stated
 over what that pseudocode returns. Then it proves the theorem.
 
-It should handles other kinds of paper too. 
+It handles other kinds of paper too. Algorithms are what it is tuned for.
 
+This repository is where you download the extension and report problems. The
+source is not here — see [Source](#source).
 
 There are two ways to run it. The **VS Code extension** puts it in a side bar
 next to your paper. The **`tex2lean` command** is the same program in a
@@ -46,7 +49,16 @@ Windows, in PowerShell:
 irm https://raw.githubusercontent.com/meelgroup/tex2lean-releases/main/install.ps1 | iex
 ```
 
-Then, in the folder that holds your paper:
+Then set the machine up. This happens once, not once per paper:
+
+```sh
+tex2lean setup
+```
+
+Until it has, every command starts with a line saying so. It builds Mathlib and
+arlib here, which takes about an hour and 15 GB of disk.
+
+After that, in the folder that holds your paper:
 
 ```sh
 tex2lean scan
@@ -54,6 +66,42 @@ tex2lean all
 ```
 
 `tex2lean --help` lists every command.
+
+To upgrade it later:
+
+```sh
+tex2lean upgrade
+```
+
+It says which version you have and which is out, checks the download against the
+published SHA-256, runs it once, and only then replaces the file. If any of that
+fails, nothing changes. Re-running the install line above does the same thing.
+
+## Typing at the prompt
+
+When a command finishes, the terminal stays open:
+
+```
+tex2lean> /help
+```
+
+`/help` lists what you can type and what is unavailable, with the reason.
+`/targets` lists the statements and how far each has got, `/show t3` says where
+one is in the paper, `/check` runs the gates, `/quit` leaves. A script, a pipe
+or `--yes` never sees the prompt — the command exits as it always did.
+
+Anything that does not start with `/` is a note for the run:
+
+```
+tex2lean> use the coupling argument, not the union bound
+```
+
+It joins the standing instructions and leads the next agent's brief. Nothing in
+flight hears it — a model call already going cannot be spoken to — so it lands
+at the next boundary.
+
+While a run is going, **`p`** pauses it at the next boundary and keeps what it
+has. **ctrl-c** stops it now.
 
 **What the installer does.** It downloads one file for your platform from the
 latest release, checks it against the published SHA-256, and puts it in
@@ -103,6 +151,25 @@ Open the side bar. Run **Tex2Lean: Open in Side bar** from the command palette.
    Everything else the scan found is one click behind them.
 3. **Pick a result and click Formalize.** Or use **Formalize several…** to tick
    off a batch and let it work through them.
+
+Each row has its own buttons:
+
+| Button | What it does |
+| --- | --- |
+| **.tex** | Opens the statement in your paper, at the line it was read from. |
+| **.lean** | Opens the Lean file it was formalized into. Appears once there is one. |
+| **Formalize** | Starts the run for that one statement. |
+| **Recheck** | Asks Lean about a finished statement again. |
+
+**Recheck** is worth knowing about. It rebuilds the statement and reads its
+axioms. If the only axioms are Lean's own three, it says so and stops. If
+something else got in — a `sorry`, an axiom you did not intend — it tells you
+what it found and asks before it changes anything.
+
+PDF import works. A `.tex` source gives a much better result.
+
+A run takes hours and spends real money on model calls. You can stop it at any
+time. The side bar offers to pick up where it left off.
 
 ## Reporting a bug
 

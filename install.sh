@@ -103,7 +103,7 @@ fetch "$base/checksums.txt" "$tmp/checksums.txt" ||
 want="$(grep " $asset\.gz\$" "$tmp/checksums.txt" | cut -d' ' -f1 || true)"
 [ -n "$want" ] ||
 	die "this release publishes no $asset.gz.
-       It lists: $(cut -d' ' -f3 "$tmp/checksums.txt" | tr '\n' ' ')"
+       It lists: $(grep -v '^#' "$tmp/checksums.txt" | cut -d' ' -f3 | tr '\n' ' ')"
 
 say "  expecting sha256 $want"
 fetch "$base/$asset.gz" "$tmp/$asset.gz" ||
