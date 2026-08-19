@@ -55,9 +55,6 @@ Then set the machine up. This happens once, not once per paper:
 tex2lean setup
 ```
 
-Until it has, every command starts with a line saying so. It builds Mathlib and
-arlib here, which takes about an hour and 15 GB of disk.
-
 After that, in the folder that holds your paper:
 
 ```sh
@@ -152,24 +149,6 @@ Open the side bar. Run **Tex2Lean: Open in Side bar** from the command palette.
 3. **Pick a result and click Formalize.** Or use **Formalize several…** to tick
    off a batch and let it work through them.
 
-Each row has its own buttons:
-
-| Button | What it does |
-| --- | --- |
-| **.tex** | Opens the statement in your paper, at the line it was read from. |
-| **.lean** | Opens the Lean file it was formalized into. Appears once there is one. |
-| **Formalize** | Starts the run for that one statement. |
-| **Recheck** | Asks Lean about a finished statement again. |
-
-**Recheck** is worth knowing about. It rebuilds the statement and reads its
-axioms. If the only axioms are Lean's own three, it says so and stops. If
-something else got in — a `sorry`, an axiom you did not intend — it tells you
-what it found and asks before it changes anything.
-
-PDF import works. A `.tex` source gives a much better result.
-
-A run takes hours and spends real money on model calls. You can stop it at any
-time. The side bar offers to pick up where it left off.
 
 ## Reporting a bug
 
