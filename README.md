@@ -1,181 +1,164 @@
 # Tex2Lean
 
-**From a theorem in your paper to a working Lean 4 project.**
+Tex2Lean turns mathematical results from a paper into a Lean 4 project. It is
+designed primarily for papers that state an algorithm and prove a theorem about
+its output.
 
+For each selected result, Tex2Lean:
 
-You have an algorithm and a theorem about it. Tex2Lean formalizes both. The
-pseudocode is transcribed line by line from your paper. The theorem is stated
-over what that pseudocode returns. Then it proves the theorem.
+- reads the paper's LaTeX source;
+- translates the relevant pseudocode and mathematical model into Lean;
+- states the result against the translated program;
+- builds and checks the proof with Lean; and
+- reports ambiguities or defects that require the author's input.
 
-It handles other kinds of paper too. Algorithms are what it is tuned for.
-
-This repository is where you download the extension and report problems. The
-source is not here — see [Source](#source).
-
-There are two ways to run it. The **VS Code extension** puts it in a side bar
-next to your paper. The **`tex2lean` command** is the same program in a
-terminal, for a machine you reach over ssh, an overnight run, or CI. Install
-either, or both.
+This repository provides Tex2Lean downloads, installation instructions, and the
+issue tracker.
 
 ## Install the extension
 
-1. Download `tex2lean4.vsix` from the
-   [latest release](https://github.com/meelgroup/tex2lean-releases/releases/latest).
-2. In VS Code: **Extensions** → the `···` menu → **Install from VSIX…**. Pick
-   the file.
+Search for **Tex2Lean** in the VS Code Extensions view and select **Install**.
 
-Or from a terminal:
+You can also download the latest `.vsix` from
+[meelgroup/tex2lean-releases](https://github.com/meelgroup/tex2lean-releases/releases/latest)
+and choose **Extensions** → **···** → **Install from VSIX…**.
+
+From a terminal:
 
 ```sh
 code --install-extension tex2lean4.vsix
 ```
 
-To upgrade, install the newer file over the top. VS Code replaces the old one.
+After installing or upgrading, reload the VS Code window to load the extension.
 
-The version shown in the Extensions pane is what you are running. When something
-behaves oddly, check it against the latest release first.
+## Get started
 
-## Install the command line
+Open the folder containing your paper's `.tex` files, then run
+**Tex2Lean: Open in Side bar** from the command palette.
 
-macOS and Linux:
+1. Select **Set Up**. This installs and builds the Lean environment and is
+   normally required only once per machine.
+2. Select **Scan LaTeX sources**. Tex2Lean lists the main results it found in
+   the paper.
+3. Select **Formalize** next to a result. To process multiple results in
+   sequence, select **Formalize several…**.
+
+LaTeX source produces the best results. PDF import is also available when
+`pdftotext` or `mutool` is installed.
+
+Saved `theorem` and `lemma` declarations under the Lean project's `Model/`
+directories also appear in **Lean statements**. Declarations already linked to
+paper statements keep their existing paper rows. For a new theorem, write its
+statement with a `sorry` proof, save the file, and select **Prove**. Tex2Lean
+checks the declaration with Lean and proves it directly, without restating it
+from TeX. The row supports **Resume**, **Recheck Lean**, and navigation to its
+declaration. This also works without a paper scan. Use **Refresh Lean statements**
+if you need to refresh the list manually.
+
+OpenRouter is available under **Connect → OpenRouter key**. Save your key there
+and set `formalize.openrouter.model` to a model slug from the
+[OpenRouter catalog](https://openrouter.ai/models), or leave it as `openrouter/auto`.
+For the CLI, set `OPENROUTER_API_KEY` and use
+`--provider openrouter --model <model-slug>`. Selecting OpenRouter uses `@openrouter/agent` for proof workers and project chat,
+with local file and Lean tools; no Claude or Codex CLI is required. Selecting
+Claude CLI or Codex CLI uses that CLI. OpenRouter also handles planning and review
+passes. Choose a model that supports tool calling.
+
+## Requirements
+
+- VS Code 1.90 or newer
+- Git
+- One supported model connection:
+  - a Claude Pro or Max subscription with
+    [Claude Code](https://claude.com/download) signed in;
+  - a ChatGPT Plus or Pro subscription with
+    [Codex](https://openai.com/codex) signed in; or
+  - an [Anthropic](https://console.anthropic.com/) or
+    [OpenAI](https://platform.openai.com/) or
+    [OpenRouter](https://openrouter.ai/settings/keys) API key
+
+Tex2Lean installs Lean, but it does not install Git. The initial Mathlib build
+can take some time and requires several gigabytes of disk space.
+
+## Project-aware chat
+
+Questions in the run chat go to the selected coding agent. It can inspect the
+current paper, Lean sources, proof state, and run evidence before answering,
+but question turns are read-only.
+Explicit change requests—and follow-ups such as **do it** after a proposed next
+step—first ask you to pause any active Tex2Lean run. No editing agent starts
+until the run is paused; you can then retry the preserved request with
+**Change this**. The write turn runs inside Tex2Lean's checked change workflow.
+
+The agent treats each library's `Model/` directory as the user-facing audited
+contract: definitions, assumptions, program semantics, and theorem statements.
+`Interface/` bridges that contract to proof representations, while `Analysis/`
+contains proof implementation. Changes are rebuilt and checked for scope before
+they are kept.
+
+## Command-line version
+
+The experimental command-line version is available for macOS, Linux, and
+Windows. It uses the same project as the extension; only one Tex2Lean run can
+work on that project at a time.
+
+On macOS and Linux:
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/meelgroup/tex2lean-releases/main/install.sh | sh
 ```
 
-Windows, in PowerShell:
+On Windows, run the following in PowerShell:
 
 ```powershell
 irm https://raw.githubusercontent.com/meelgroup/tex2lean-releases/main/install.ps1 | iex
 ```
 
-Then set the machine up. This happens once, not once per paper:
+The installer downloads the executable for your platform and checks it against
+`checksums.txt` from the release. No separate Node installation is required.
+On macOS and Linux, ensure `~/.local/bin` is on your `PATH`.
+
+Set up the Lean environment, then run these commands in your paper's folder:
 
 ```sh
 tex2lean setup
-```
-
-After that, in the folder that holds your paper:
-
-```sh
 tex2lean scan
 tex2lean all
 ```
 
-`tex2lean --help` lists every command.
-
-To upgrade it later:
+Run `tex2lean --help` to see the available commands. To update the CLI:
 
 ```sh
 tex2lean upgrade
 ```
 
-It says which version you have and which is out, checks the download against the
-published SHA-256, runs it once, and only then replaces the file. If any of that
-fails, nothing changes. Re-running the install line above does the same thing.
+In an interactive terminal, `/help` lists the available prompt commands.
+Use `/targets` to list results, `/show t3` to inspect a result, and `/quit` to
+leave the prompt. During a run, press **p** to request a pause or **Ctrl+C** to
+stop it.
 
-## Typing at the prompt
+You can also download the executable for your platform from the
+[latest release](https://github.com/meelgroup/tex2lean-releases/releases/latest)
+and verify its SHA-256 against `checksums.txt`. The installation scripts are
+available here as [install.sh](install.sh) and [install.ps1](install.ps1).
 
-When a command finishes, the terminal stays open:
+## Report a problem
 
-```
-tex2lean> /help
-```
+[Open an issue](https://github.com/meelgroup/tex2lean-releases/issues/new/choose)
+and include:
 
-`/help` lists what you can type and what is unavailable, with the reason.
-`/targets` lists the statements and how far each has got, `/show t3` says where
-one is in the paper, `/check` runs the gates, `/quit` leaves. A script, a pipe
-or `--yes` never sees the prompt — the command exits as it always did.
+- the Tex2Lean version shown in the Extensions view, or `tex2lean --version`; and
+- the relevant portion of the extension log, available through
+  **Tex2Lean: Show extension log** or the **Log** button in the side bar.
 
-Anything that does not start with `/` is a note for the run:
+Please review the log before posting it and remove any information you do not
+want to share publicly.
 
-```
-tex2lean> use the coupling argument, not the union bound
-```
+Questions can also be sent to [meel@gatech.edu](mailto:meel@gatech.edu).
 
-It joins the standing instructions and leads the next agent's brief. Nothing in
-flight hears it — a model call already going cannot be spoken to — so it lands
-at the next boundary.
+## Source and license
 
-While a run is going, **`p`** pauses it at the next boundary and keeps what it
-has. **ctrl-c** stops it now.
+Tex2Lean's source is not currently public. This repository distributes the
+packaged extension and CLI executables and hosts the issue tracker.
 
-**What the installer does.** It downloads one file for your platform from the
-latest release, checks it against the published SHA-256, and puts it in
-`~/.local/bin`. It does not need Node, Python or a package manager, and it does
-not ask for a password. It does not edit your shell profile: if `~/.local/bin`
-is not on your `PATH` it prints the line to add and leaves that to you. On
-Windows it adds one directory to your user `PATH` and says so.
-
-The script is [install.sh](install.sh) in this repository. Read it before you
-pipe it into a shell — it is about a hundred lines, and that is why it lives
-here rather than being hidden inside a download.
-
-Prefer to do it by hand? Download `tex2lean-<your platform>.gz` from the
-[latest release](https://github.com/meelgroup/tex2lean-releases/releases/latest),
-check it against `checksums.txt`, `gunzip` it, `chmod +x` it, and put it
-somewhere on your `PATH`.
-
-- **Upgrade:** run the same line again.
-- **Uninstall:** `rm ~/.local/bin/tex2lean`. Nothing else was added.
-- **A specific release:** `TEX2LEAN_VERSION=v0.2.0` before the command.
-- **Somewhere else:** `TEX2LEAN_INSTALL_DIR=/opt/bin`.
-
-The extension and the command line are the same program and read the same
-project. They will not run on the same paper at once — whichever starts second
-is told what holds it.
-
-## What you need
-
-- **VS Code 1.90 or newer**, for the extension. The command line needs no
-  editor and no runtime; it is one self-contained file.
-- **git.** Tex2Lean installs Lean for you. It does not install git. Use your
-  system's package manager for that.
-- **A model to drive it.** One of:
-  - a **Claude** Pro or Max subscription, with [Claude Code](https://claude.com/download) signed in;
-  - a **ChatGPT** Plus or Pro subscription, with [Codex](https://openai.com/codex) signed in;
-  - an [Anthropic](https://console.anthropic.com/) or [OpenAI](https://platform.openai.com/) API key.
-
-The first run builds Mathlib. That happens once per machine. Set aside an hour
-and 15 GB of disk.
-
-## Getting started
-
-Open the side bar. Run **Tex2Lean: Open in Side bar** from the command palette.
-
-1. **Connect to Claude or ChatGPT.** Pick your subscription, or paste an API key.
-2. **Scan LaTeX sources.** Your paper's main results appear in the side bar.
-   Everything else the scan found is one click behind them.
-3. **Pick a result and click Formalize.** Or use **Formalize several…** to tick
-   off a batch and let it work through them.
-
-
-## Reporting a bug
-
-[**Open an issue.**](https://github.com/meelgroup/tex2lean-releases/issues/new/choose)
-
-Two things make a report fixable, and both are easy to forget:
-
-- **The version.** It is in the Extensions pane, or run `tex2lean --version`.
-- **The log.** Run *Tex2Lean: Show extension log*, or click **Log** at the
-  bottom of the side bar. Paste the part around whatever went wrong. A few
-  hundred lines is plenty.
-
-If it is about one paper and you can share the `.tex`, say so. Most odd
-behaviour comes from a statement the scan read differently than you did.
-
-The log records file paths, statement names, and what the agents did. It does
-not record your API keys. Read it before you paste it, and cut anything you
-would rather not publish.
-
-## Source
-
-Not public at the moment. This repository carries the packaged extension and the
-issue tracker.
-
-## Licence
-
-See [LICENSE](LICENSE). Free to install and use, including for commercial and
-academic work. What the extension writes into your workspace is yours.
-
-Built at Georgia Tech.
+See [LICENSE](LICENSE) for usage terms. Built at Georgia Tech.
