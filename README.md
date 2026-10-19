@@ -146,9 +146,3 @@ publicly.
 
 Questions can also be sent to [meel@gatech.edu](mailto:meel@gatech.edu).
 
-## Source and license
-
-Tex2Lean's source is not currently public. This repository distributes release
-artifacts and hosts the issue tracker. See [LICENSE](LICENSE) for usage terms.
-
-Built at Georgia Tech.
